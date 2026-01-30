@@ -1,0 +1,10 @@
+[package]
+name = "llm-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version="4.5.38", features=["derive"]}
+gpt-encoder = "0.1.1"
+rand = "0.9.0"
+rayon = "1.10.0"
