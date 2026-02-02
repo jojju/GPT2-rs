@@ -1,13 +1,12 @@
 use crate::load_gpt2;
-use gpt_encoder;
 
 // Return embeddings corresponding to provided tokens, plus position encodings.
 // Token embeddings should be arranged in order, with the index corresponding to the token.
 fn add_embeddings_and_position_encodings(
-    out: &mut Vec<f32>,
+    out: &mut [f32],
     tokens: &[u64],
-    token_embeddings: &Vec<f32>,
-    positional_encodings: &Vec<f32>,
+    token_embeddings: &[f32],
+    positional_encodings: &[f32],
     embedding_size: usize,
 ) {
     for (i, tok) in tokens.iter().enumerate() {
@@ -20,7 +19,7 @@ fn add_embeddings_and_position_encodings(
         for j in start_idx..end_idx {
             // Position encodings are simply added to the embedding
             out[j] = embedding[k] + position_encoding[k];
-            k = k + 1;
+            k += 1;
         }
     }
 }
@@ -145,7 +144,7 @@ fn attention(out: &mut [f32], inp: &[f32], c: usize, n_heads: usize) {
     let scale = 1.0 / (head_size as f32).sqrt();
 
     // Calculate t_len (sequence length) from inp
-    let t_len = (inp.len() / c3) as usize;
+    let t_len = inp.len() / c3;
     // Define preatt and att based on t, n_heads
     let mut preatt = vec![0.0f32; n_heads * t_len * t_len];
     let mut att = vec![0.0f32; n_heads * t_len * t_len];
@@ -269,7 +268,7 @@ impl std::fmt::Display for TokenCandidate {
 // The result is sorted by probability (descending)
 fn top_p_filtering(probs: &[f32], top_p: f32, vocab_size: usize) -> Vec<TokenCandidate> {
     assert!(probs.len() == vocab_size);
-    assert!(top_p >= 0.0 && top_p <= 1.0);
+    assert!((0.0..=1.0).contains(&top_p));
 
     // Create a TokenCandidate for each token in the vocabulary
     let mut candidates: Vec<TokenCandidate> = probs[0..vocab_size]
@@ -347,7 +346,7 @@ fn sample_from_probabilities(items: &[TokenCandidate]) -> Option<TokenCandidate>
 pub fn infer(
     model: &mut load_gpt2::GPT2,
     encoder: &gpt_encoder::Encoder,
-    tokens: &Vec<u64>,
+    tokens: &[u64],
     seq_len: usize,
     top_p: f32,
 ) -> (u64, Vec<TokenCandidate>) {
@@ -437,15 +436,15 @@ pub fn infer(
         // First normalize
         layer_normalize(
             &mut attn_ln_out,
-            &block_input,
-            &layernorm_1_w,
-            &layernorm_1_b,
+            block_input,
+            layernorm_1_w,
+            layernorm_1_b,
             seq_len,
             c,
         );
 
         // Calculate keys, queries and values (qkv)
-        matmul_with_bias(&mut qkv, &attn_ln_out, &qkv_w, Some(&qkv_b), c, 3 * c);
+        matmul_with_bias(&mut qkv, &attn_ln_out, qkv_w, Some(qkv_b), c, 3 * c);
 
         // Carry out the attention mechanism
         attention(&mut attn_out, &qkv, c, model.config.num_heads);
@@ -454,21 +453,21 @@ pub fn infer(
         matmul_with_bias(
             &mut attn_proj,
             &attn_out,
-            &attn_projection_w,
-            Some(&attn_projection_b),
+            attn_projection_w,
+            Some(attn_projection_b),
             c,
             c,
         );
 
         // Add back the first vector as a skip connection
-        add_residual(&mut attn_residual, &attn_proj, &block_input);
+        add_residual(&mut attn_residual, &attn_proj, block_input);
 
         // Normalize again
         layer_normalize(
             &mut ff_ln_out,
             &attn_residual,
-            &layernorm_2_w,
-            &layernorm_2_b,
+            layernorm_2_w,
+            layernorm_2_b,
             seq_len,
             c,
         );
@@ -490,8 +489,8 @@ pub fn infer(
         matmul_with_bias(
             &mut ff_projected,
             &ff_activated,
-            &feed_fw_contraction_w,
-            Some(&feed_fw_contraction_b),
+            feed_fw_contraction_w,
+            Some(feed_fw_contraction_b),
             4 * c,
             c,
         );
@@ -517,7 +516,7 @@ pub fn infer(
     let mut logits = vec![0.0; padded_vocab_size];
     matmul_with_bias(
         &mut logits,
-        &last_embedding,
+        last_embedding,
         &model.params.token_embedding_weights,
         None,
         c,
@@ -525,8 +524,8 @@ pub fn infer(
     );
 
     // Use a hard coded temperature
-    for i in 0..logits.len() {
-        logits[i] /= 0.9;
+    for logit in &mut logits {
+        *logit /= 0.9;
     }
 
     // Do a softmax over the logits
@@ -539,7 +538,7 @@ pub fn infer(
     // Select the final token
     let selected = sample_from_probabilities(&candidates).unwrap().token_number as u64;
 
-    return (selected, candidates);
+    (selected, candidates)
 }
 
 // Functions useful for debugging
@@ -551,7 +550,7 @@ fn print_candidates(encoder: &gpt_encoder::Encoder, candidates: &Vec<TokenCandid
         print!(
             "{:1.3} {}, ",
             c.probability,
-            encoder.decode(vec![c.token_number as u64])
+            encoder.decode(vec![c.token_number])
         );
     }
     println!();
@@ -563,5 +562,5 @@ fn print_slice(arr: &[f32], text: &str, start: usize, num: usize) {
     for i in 0..num {
         print!("{:.3} ", arr[start + i]);
     }
-    print!("\n");
+    println!();
 }

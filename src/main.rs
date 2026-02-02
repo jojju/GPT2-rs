@@ -37,7 +37,7 @@ fn print_token_fixed_width(encoder: &Encoder, token: u64) {
 }
 
 fn print_token_candidate(encoder: &Encoder, c: TokenCandidate) {
-    let text = encoder.decode(vec![c.token_number as u64]);
+    let text = encoder.decode(vec![c.token_number]);
     let text_no_newlines = text.replace("\n", "<newline>");
     print!(" \"{}\":{:1.3},", text_no_newlines, c.probability);
 }
@@ -45,13 +45,12 @@ fn print_token_candidate(encoder: &Encoder, c: TokenCandidate) {
 fn main() {
     let args = Args::parse();
 
-    let checkpoint_path = String::from("gpt2_124M.bin");
-    let mut model = load_gpt2::build_from_checkpoint(&checkpoint_path).unwrap();
+    let mut model = load_gpt2::build_from_checkpoint(load_gpt2::DEFAULT_CHECKPOINT_PATH).unwrap();
     println!("Model built successfully\n");
     let sequence_len = 128;
 
     let mut prompt = args.prompt;
-    if prompt.len() == 0 {
+    if prompt.is_empty() {
         prompt = "\n".to_string();
     }
 
@@ -75,7 +74,7 @@ fn main() {
 
         tokens.push(token);
 
-        if args.showcandidates <= 0 {
+        if args.showcandidates == 0 {
             print_token(&encoder, token);
         } else {
             print_token_fixed_width(&encoder, token);
@@ -98,8 +97,7 @@ mod tests {
     #[test]
     // Infer some tokens using a very low top_p, so that the result is predictable
     fn test_predictable_generation() {
-        let checkpoint_path = String::from("gpt2_124M.bin");
-        let mut model = load_gpt2::build_from_checkpoint(&checkpoint_path).unwrap();
+        let mut model = load_gpt2::build_from_checkpoint(load_gpt2::DEFAULT_CHECKPOINT_PATH).unwrap();
         let sequence_len = 64;
         let prompt = "To be or not to be, that".to_string();
         let mut encoder = gpt_encoder::Encoder::new();

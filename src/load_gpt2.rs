@@ -6,10 +6,12 @@ use std::{
     slice,
 };
 
+pub const DEFAULT_CHECKPOINT_PATH: &str = "gpt2_small_124M.bin";
+
 // Helper function for reading from a file into a buffer of type T
 fn read_to_buffer<T: Copy>(file: &mut File, buffer: &mut [T]) -> Result<(), Error> {
-    // Calculate the total number of bytes to read.
-    let buffer_size_bytes = buffer.len() * mem::size_of::<T>();
+    // Get the total number of bytes to read.
+    let buffer_size_bytes = mem::size_of_val(buffer);
 
     if buffer_size_bytes == 0 {
         return Ok(());
@@ -256,8 +258,7 @@ pub fn build_from_checkpoint(checkpoint_path: &str) -> Result<GPT2, Error> {
 #[test]
 // Just a quick test that some data has been read correctly.
 fn test_gpt2_build_from_checkpoint() {
-    let checkpoint_path = String::from("gpt2_124M.bin");
-    let model = build_from_checkpoint(&checkpoint_path).unwrap();
+    let model = build_from_checkpoint(DEFAULT_CHECKPOINT_PATH).unwrap();
     let expected_wpe: [f32; 10] = [
         -0.01882072,
         -0.1974186,
