@@ -2,9 +2,9 @@
 
 A Rust project for running inference (text generation) using GPT-2.
 
-The purpose is to gain a deeper understanding of LLMs and transformer models in general. Therefore, everything is implemented from scratch, not using any higher level machine-learning or math libraries. (With the exception of the BPE tokenizer, which seemed less interesting to implement manually.)
+The purpose is to gain a deeper understanding of LLMs and transformer models in general. Therefore, everything is implemented from scratch, without using any higher-level machine-learning or math libraries. (With the exception of the BPE tokenizer, which seemed less interesting to implement.)
 
-The code runs on the CPU and is not optimized, except that we run matrix multiplication multi-threaded on all available cores. The goal here is not performance, but understanding. The small variant of GPT-2 is used, which gives reasonable performance on a decent CPU. Compiler optimizations make a big difference so the `--release` flag is necessary for good performance.
+The code runs on the CPU and is not optimized, except that we run matrix multiplication multi-threaded on all available cores. The goal here is not performance, but understanding. The small variant of GPT-2 is used, which gives reasonable performance on a decent CPU. Compiler optimizations make a big difference, so the `--release` flag is necessary for good performance.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ Generate text with a custom prompt:
 cargo run --release -- --prompt "Once upon a time" --numtokens 50
 ```
 
-Show top 5 candidate tokens during generation with their probabilities. This is useful for understanding the model's decision-making process and seeing which alternatives it considers. The actual output is selected using top-p sampling from the probability distribution.
+Show the top 5 candidate tokens during generation with their probabilities. This is useful for understanding the model's decision-making process and seeing which alternatives it considers. The actual output is selected using top-p sampling from the probability distribution.
 
 ```bash
 cargo run --release -- --prompt "The future of AI is" --showcandidates 5
