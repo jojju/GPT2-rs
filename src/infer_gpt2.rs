@@ -294,13 +294,13 @@ fn top_p_filtering(probs: &[f32], top_p: f32, vocab_size: usize) -> Vec<TokenCan
     let mut nbr_candidates = 0;
 
     for indexed_value in candidates.iter() {
-        // Add this token's probability to the sum. Ensure we always include at least one token.
+        // Add this token's probability to the sum.
         cumulative_prob += indexed_value.probability;
         // Set the current number of candidates added
         nbr_candidates += 1;
         // Check if adding this token would exceed the threshold.
-        // It's important to include the token that *crosses* the threshold.
-        if cumulative_prob >= top_p {
+        // Ensure we always include at least two candidates, to try to avoid repetitions.
+        if cumulative_prob >= top_p && nbr_candidates > 1{
             break; // Stop adding tokens once cumulative probability is met
         }
     }
