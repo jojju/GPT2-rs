@@ -238,7 +238,6 @@ pub fn build_from_checkpoint(checkpoint_path: &str) -> Result<GPT2, Error> {
     println!("Loading GPT-2 model");
     println!("Max sequence length: {}", max_seq_len);
     println!("Vocabulary size: {}", vocab_size);
-    println!("Padded vocabulary size: {}", padded_vocab_size);
     println!("Layers: {}", layers);
     println!("Attention heads: {}", heads);
     println!("Channels: {}", channels);
