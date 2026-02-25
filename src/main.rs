@@ -30,16 +30,19 @@ fn print_token(encoder: &Encoder, token: u64) {
     io::stdout().flush().unwrap();
 }
 
+const RED_CITATION_CHAR: &str = "\x1b[31m\"\x1b[0m";
+const YELLOW_CITATION_CHAR: &str = "\x1b[33m\"\x1b[0m";
+
 fn print_token_fixed_width(encoder: &Encoder, token: u64) {
     let text = encoder.decode(vec![token]);
-    let text_no_newlines = text.replace("\n", "<newline>");
-    print!("{:<16}", text_no_newlines);
+    let text_no_newlines = format!("{}{}{}", YELLOW_CITATION_CHAR, text.replace("\n", "<newline>"), YELLOW_CITATION_CHAR);
+    print!("{:<34}", text_no_newlines);
 }
 
 fn print_token_candidate(encoder: &Encoder, c: TokenCandidate) {
     let text = encoder.decode(vec![c.token_number]);
     let text_no_newlines = text.replace("\n", "<newline>");
-    print!(" \"{}\":{:1.3},", text_no_newlines, c.probability);
+    print!(" {}{}{}:{:1.3},", RED_CITATION_CHAR, text_no_newlines, RED_CITATION_CHAR,c.probability);
 }
 
 fn main() {
