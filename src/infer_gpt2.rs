@@ -293,6 +293,8 @@ fn top_p_filtering(probs: &[f32], top_p: f32, vocab_size: usize) -> Vec<TokenCan
     let mut cumulative_prob = 0.0;
     let mut nbr_candidates = 0;
 
+    let min_nbr_candidates = if top_p == 0.0 { 1 } else { 2 };
+
     for indexed_value in candidates.iter() {
         // Add this token's probability to the sum.
         cumulative_prob += indexed_value.probability;
@@ -300,7 +302,7 @@ fn top_p_filtering(probs: &[f32], top_p: f32, vocab_size: usize) -> Vec<TokenCan
         nbr_candidates += 1;
         // Check if adding this token would exceed the threshold.
         // Ensure we always include at least two candidates, to try to avoid repetitions.
-        if cumulative_prob >= top_p && nbr_candidates > 1 {
+        if cumulative_prob >= top_p && nbr_candidates >= min_nbr_candidates {
             break; // Stop adding tokens once cumulative probability is met
         }
     }
@@ -512,6 +514,8 @@ pub fn infer(
 
     // Calculate the logits (of the same size as the vocabulary)
     let last_embedding = &final_norm;
+    // Padded to a multiple of 64, for efficiency. The extra tokens will just have 0 probability, 
+    // so it doesn't affect the result:
     let padded_vocab_size = model.config.padded_vocab_size;
     let vocab_size = model.config.vocab_size;
     let mut logits = vec![0.0; padded_vocab_size];
