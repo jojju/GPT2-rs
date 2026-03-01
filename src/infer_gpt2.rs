@@ -300,7 +300,7 @@ fn top_p_filtering(probs: &[f32], top_p: f32, vocab_size: usize) -> Vec<TokenCan
         nbr_candidates += 1;
         // Check if adding this token would exceed the threshold.
         // Ensure we always include at least two candidates, to try to avoid repetitions.
-        if cumulative_prob >= top_p && nbr_candidates > 1{
+        if cumulative_prob >= top_p && nbr_candidates > 1 {
             break; // Stop adding tokens once cumulative probability is met
         }
     }
@@ -363,6 +363,7 @@ pub fn infer(
     );
 
     // Allocate vectors to use for the steps in each layer
+    // We pre-allocate them as an optimization, to avoid having to allocate new vectors for every layer.
     let size = c * seq_len;
     let mut attn_ln_out = vec![0.0; size];
     let mut qkv = vec![0.0; size * 3]; // Will hold the three q, k, v vectors
