@@ -68,7 +68,7 @@ fn main() {
 
     for _ in 0..args.numtokens {
         let (token, candidates) =
-            infer_gpt2::infer(&mut model, &encoder, &tokens, sequence_len, 0.65);
+            infer_gpt2::infer(&mut model, &encoder, &tokens, sequence_len, 0.80);
 
         // When we reach max context, start trimming it from the start
         if tokens.len() >= sequence_len {
@@ -117,11 +117,10 @@ mod tests {
         let (token3, _) = infer_gpt2::infer(&mut model, &encoder, &tokens, sequence_len, 0.0);
         tokens.push(token3);
         print_token(&encoder, token3);
+        println!();
 
         assert_eq!(token1, 338); // "'s"
         assert_eq!(token2, 644); // " what"
         assert_eq!(token3, 314); // " I"
-
-        println!("second token: \"{}\"", encoder.decode(vec![token2]));
     }
 }

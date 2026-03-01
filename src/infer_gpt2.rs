@@ -292,8 +292,7 @@ fn top_p_filtering(probs: &[f32], top_p: f32, vocab_size: usize) -> Vec<TokenCan
     // Apply Top-P filtering to the sorted candidates
     let mut cumulative_prob = 0.0;
     let mut nbr_candidates = 0;
-
-    let min_nbr_candidates = if top_p == 0.0 { 1 } else { 2 };
+    let min_nbr_candidates = 1;
 
     for indexed_value in candidates.iter() {
         // Add this token's probability to the sum.
