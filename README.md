@@ -42,6 +42,7 @@ Show the top 5 candidate tokens during generation with their probabilities. This
 ```bash
 cargo run --release -- --prompt "The future of AI is" --showcandidates 5
 ```
+![Command output](assets/gpt2.png)
 
 ## Testing
 
