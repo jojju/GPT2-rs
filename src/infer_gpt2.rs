@@ -1,4 +1,5 @@
 use crate::load_gpt2;
+use rayon::prelude::*;
 
 // Return embeddings corresponding to provided tokens, plus position encodings.
 // Token embeddings should be arranged in order, with the index corresponding to the token.
@@ -98,8 +99,6 @@ fn layer_normalize(
 //         }
 //     }
 // }
-
-use rayon::prelude::*;
 
 fn matmul_with_bias(
     out: &mut [f32],
@@ -510,16 +509,18 @@ pub fn infer(
         c,
     );
 
-    // Calculate the logits (of the same size as the vocabulary)
-    let last_embedding = &final_norm;
+    let final_embedding = &final_norm;
     // Padded to a multiple of 64, for efficiency. The extra tokens will just have 0 probability,
     // so it doesn't affect the result:
     let padded_vocab_size = model.config.padded_vocab_size;
     let vocab_size = model.config.vocab_size;
     let mut logits = vec![0.0; padded_vocab_size];
+
+    // Calculate the logits (of the same size as the vocabulary)
+    // Multiply the final embedding by each token embedding, to get a logit for each token in the vocabulary.
     matmul_with_bias(
         &mut logits,
-        last_embedding,
+        final_embedding,
         &model.params.token_embedding_weights,
         None,
         c,
