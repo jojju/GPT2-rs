@@ -131,7 +131,7 @@ fn matmul_with_bias(
 }
 
 // Scaled dot-product attention
-// inp contains query, key and value vectors, calculated in a previous step
+// inp contains already calculated query, key and value vectors
 // Data layout of inp:
 // [Q(tok1), K(tok1), V(tok1), Q(tok2), K(tok2), V(tok2), ..., Q(tokT), K(tokT), V(tokT)]
 // where each Q(tok_i), K(tok_i), V(tok_i) is a vector of size c.
@@ -218,7 +218,7 @@ use std::sync::OnceLock;
 // A value that is calculated only once
 static GELU_SCALING_FACTOR: OnceLock<f32> = OnceLock::new();
 
-// Element-wise GeLU activation function
+// GeLU activation function
 fn gelu(out: &mut [f32], inp: &[f32]) {
     assert_eq!(inp.len(), out.len());
     let scaling_factor = GELU_SCALING_FACTOR.get_or_init(|| (2.0_f32 / PI).sqrt());
@@ -232,10 +232,9 @@ fn gelu(out: &mut [f32], inp: &[f32]) {
 use std::f32;
 
 // Output values as probabilities that sum to 1
+// probs: the probabilities that will sum to 1.0
+// logits: the raw inputs
 fn softmax(probs: &mut [f32], logits: &[f32], size: usize) {
-    // output: probs are the probabilities that will sum to 1.0
-    // logits: the raw inputs
-
     // maxval is only calculated and subtracted for numerical stability
     let maxval = logits[..size]
         .iter()
@@ -513,7 +512,7 @@ pub fn infer(
 
     // Calculate the logits (of the same size as the vocabulary)
     let last_embedding = &final_norm;
-    // Padded to a multiple of 64, for efficiency. The extra tokens will just have 0 probability, 
+    // Padded to a multiple of 64, for efficiency. The extra tokens will just have 0 probability,
     // so it doesn't affect the result:
     let padded_vocab_size = model.config.padded_vocab_size;
     let vocab_size = model.config.vocab_size;
@@ -532,7 +531,7 @@ pub fn infer(
         *logit /= 0.9;
     }
 
-    // Do a softmax over the logits
+    // Do a softmax over the logits to get probabilities for each token in the vocabulary
     let mut probs = vec![0.0; vocab_size];
     softmax(&mut probs, &logits, vocab_size);
 
