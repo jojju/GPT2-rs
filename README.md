@@ -13,7 +13,7 @@ The code runs on the CPU and is not optimized, except that we run matrix multipl
 
 ## Download the Model
 
-The model file is provided as a release, due to its size (475 MB). [Download](https://github.com/jojju/GPT2-rs/releases/download/Model_file/gpt2_small_124M.binn) it and put it at the top level of the repository.
+The model file is provided as a release, due to its size (475 MB). [Download](https://github.com/jojju/GPT2-rs/releases/download/Model/gpt2_small_124M.bin) it and put it at the top level of the repository.
 
 ## Usage
 
