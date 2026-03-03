@@ -125,11 +125,12 @@ fn attention(out: &mut [f32], inp: &[f32], c: usize, n_heads: usize) {
     for t_idx in 0..t_len {
         // For each head in the model
         for head_idx in 0..n_heads {
-            // The query for the current token and head
+            // Offest to the query for the current token and head
             let query_offset = t_idx * c3 + head_idx * head_size;
 
-            let preatt_offset = head_idx * t_len * t_len + t_idx * t_len;
+            // Offset into the [n_heads, t_len, t_len] preatt/att vectors
             let att_offset = head_idx * t_len * t_len + t_idx * t_len;
+            let preatt_offset = att_offset;
 
             // For all tokens, calculate <query dot key> (and remember the maximum value)
             // This tells us how much attention to pay to this token
