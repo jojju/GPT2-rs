@@ -35,6 +35,7 @@ fn layer_normalize(
     channels: usize, // "Channels", i.e. weights per embedding
 ) {
     // Just a small number used to prevent division by zero and improve numerical stability
+    // The value comes from PyTorch's implementation, which was used in the original GPT-2 implementation.
     let epsilon = 1e-5f32;
 
     for seq_idx in 0..seq_len {
