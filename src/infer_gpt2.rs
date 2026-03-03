@@ -73,33 +73,6 @@ fn layer_normalize(
     }
 }
 
-// fn matmul_forward_simple(
-//     out: &mut [f32],
-//     input: &[f32],
-//     weight: &[f32],
-//     bias: Option<&[f32]>,
-//     t: usize,  // "time" i.e. number of tokens
-//     c: usize,  // "channels", i.e. number of weights per embedding
-//     oc: usize, // "output channels"
-// ) {
-//     // for each token
-//     for t_idx in 0..t {
-//         // for each output channel
-//         for o in 0..oc {
-//             let mut val = if let Some(bias_val) = bias {
-//                 bias_val[o]
-//             } else {
-//                 0.0
-//             };
-//             // For each input and weight, multiply them. Then add bias.
-//             for i in 0..c {
-//                 val += input[t_idx * c + i] * weight[o * c + i];
-//             }
-//             out[t_idx * oc + o] = val;
-//         }
-//     }
-// }
-
 fn matmul_with_bias(
     out: &mut [f32],
     input: &[f32],
