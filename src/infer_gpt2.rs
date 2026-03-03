@@ -14,7 +14,7 @@ fn add_embeddings_and_position_encodings(
         let start_idx = *tok as usize * embedding_size;
         let embedding = &token_embeddings[start_idx..start_idx + embedding_size];
         let start_idx = i * embedding_size;
-        let end_idx = start_idx + (embedding_size); //- 1);
+        let end_idx = start_idx + (embedding_size);
         let position_encoding = &positional_encodings[start_idx..end_idx];
         let mut k = 0;
         for j in start_idx..end_idx {
@@ -536,13 +536,11 @@ pub fn infer(
     let mut probs = vec![0.0; vocab_size];
     softmax(&mut probs, &logits, vocab_size);
 
-    // Run top P filtering to select candidate tokens
-    let candidates = top_p_filtering(&probs, top_p, vocab_size);
+    let candidate_tokens = top_p_filtering(&probs, top_p, vocab_size);
 
-    // Select the final token
-    let selected = sample_from_probabilities(&candidates).unwrap().token_number as u64;
+    let final_token = sample_from_probabilities(&candidate_tokens).unwrap().token_number as u64;
 
-    (selected, candidates)
+    (final_token, candidate_tokens)
 }
 
 // Functions useful for debugging

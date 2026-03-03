@@ -29,7 +29,7 @@ fn read_to_buffer<T: Copy>(file: &mut File, buffer: &mut [T]) -> Result<(), Erro
 
 #[derive(Debug, Clone)]
 pub struct GPT2Config {
-    pub max_seq_len: usize,
+    pub max_ctx_len: usize,
     pub vocab_size: usize,
     pub padded_vocab_size: usize,
     pub num_layers: usize,
@@ -95,7 +95,7 @@ impl GPT2ParamTensors {
     pub fn new_empty(config: &GPT2Config) -> Self {
         let vp = config.padded_vocab_size; // Vocabulary Size (Padded)
         let c = config.channels; // Embedding Dimension / Number of Channels
-        let max_t = config.max_seq_len; // Maximum Sequence Length
+        let max_t = config.max_ctx_len; // Maximum Sequence Length
         let l = config.num_layers; // Number of Transformer Layers
 
         GPT2ParamTensors {
@@ -219,7 +219,7 @@ pub fn build_from_checkpoint(checkpoint_path: &str) -> Result<GPT2, Error> {
     }
 
     // Read hyperparameters from model
-    let max_seq_len = model_header[2] as usize;
+    let max_ctx_len = model_header[2] as usize;
     let vocab_size = model_header[3] as usize;
     let layers = model_header[4] as usize;
     let heads = model_header[5] as usize;
@@ -227,7 +227,7 @@ pub fn build_from_checkpoint(checkpoint_path: &str) -> Result<GPT2, Error> {
     let padded_vocab_size = model_header[7] as usize;
 
     let config = GPT2Config {
-        max_seq_len,
+        max_ctx_len,
         vocab_size,
         padded_vocab_size,
         num_layers: layers,
@@ -236,7 +236,7 @@ pub fn build_from_checkpoint(checkpoint_path: &str) -> Result<GPT2, Error> {
     };
 
     println!("Loading GPT-2 model");
-    println!("Max sequence length: {}", max_seq_len);
+    println!("Max context length: {}", max_ctx_len);
     println!("Vocabulary size: {}", vocab_size);
     println!("Layers: {}", layers);
     println!("Attention heads: {}", heads);
@@ -244,9 +244,8 @@ pub fn build_from_checkpoint(checkpoint_path: &str) -> Result<GPT2, Error> {
 
     let mut params = GPT2ParamTensors::new_empty(&config);
 
-    println!("Parameters: {}", params.total_len());
-
     load_parameters_from_file(&mut model_file, &mut params)?;
+    println!("Parameters: {}", params.total_len());
 
     Ok(GPT2 {
         config: config.clone(),
