@@ -35,14 +35,22 @@ const YELLOW_CITATION_CHAR: &str = "\x1b[33m\"\x1b[0m";
 
 fn print_token_fixed_width(encoder: &Encoder, token: u64) {
     let text = encoder.decode(vec![token]);
-    let text_no_newlines = format!("{}{}{}", YELLOW_CITATION_CHAR, text.replace("\n", "<newline>"), YELLOW_CITATION_CHAR);
+    let text_no_newlines = format!(
+        "{}{}{}",
+        YELLOW_CITATION_CHAR,
+        text.replace("\n", "<newline>"),
+        YELLOW_CITATION_CHAR
+    );
     print!("{:<34}", text_no_newlines);
 }
 
 fn print_token_candidate(encoder: &Encoder, c: TokenCandidate) {
     let text = encoder.decode(vec![c.token_number]);
     let text_no_newlines = text.replace("\n", "<newline>");
-    print!(" {}{}{}:{:1.3},", RED_CITATION_CHAR, text_no_newlines, RED_CITATION_CHAR,c.probability);
+    print!(
+        " {}{}{}:{:1.3},",
+        RED_CITATION_CHAR, text_no_newlines, RED_CITATION_CHAR, c.probability
+    );
 }
 
 fn main() {
@@ -100,7 +108,8 @@ mod tests {
     #[test]
     // Infer some tokens using a very low top_p, so that the result is predictable
     fn test_predictable_generation() {
-        let mut model = load_gpt2::build_from_checkpoint(load_gpt2::DEFAULT_CHECKPOINT_PATH).unwrap();
+        let mut model =
+            load_gpt2::build_from_checkpoint(load_gpt2::DEFAULT_CHECKPOINT_PATH).unwrap();
         let sequence_len = 64;
         let prompt = "To be or not to be, that".to_string();
         let mut encoder = gpt_encoder::Encoder::new();

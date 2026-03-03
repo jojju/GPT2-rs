@@ -513,7 +513,9 @@ pub fn infer(
 
     let candidate_tokens = top_p_filtering(&probs, top_p, vocab_size);
 
-    let final_token = sample_from_probabilities(&candidate_tokens).unwrap().token_number as u64;
+    let final_token = sample_from_probabilities(&candidate_tokens)
+        .unwrap()
+        .token_number as u64;
 
     (final_token, candidate_tokens)
 }
