@@ -25,7 +25,7 @@ cargo run --release
 
 ### Command-Line Options
 
-- `--prompt <TEXT>`: The starting string for text generation (default: "Kim Jong Il of North Korea woke up one morning to find")
+- `--prompt <TEXT>`: The starting string for text generation
 - `--numtokens <NUMBER>`: The number of tokens to output (default: 100)
 - `--showcandidates <NUMBER>`: The number of top candidate tokens to show (default: 0)
 
