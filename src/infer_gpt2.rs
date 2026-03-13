@@ -543,3 +543,54 @@ fn print_slice(arr: &[f32], text: &str, start: usize, num: usize) {
     }
     println!();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{attention, matmul_with_bias, top_p_filtering, TokenCandidate};
+
+    #[test]
+    fn test_matmul_with_bias() {
+        let input = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+        let weight = vec![1.0, 0.0, -1.0, 2.0, 1.0, 0.5];
+        let bias = vec![0.5, -1.0];
+        let mut out = vec![0.0; 4];
+
+        matmul_with_bias(&mut out, &input, &weight, Some(&bias), 3, 2);
+
+        assert_eq!(out, vec![-1.5, 4.5, -1.5, 15.0]);
+    }
+
+    #[test]
+    fn test_top_p_filtering() {
+        let probs = vec![0.1, 0.5, 0.3, 0.1];
+
+        let candidates = top_p_filtering(&probs, 0.75, probs.len());
+
+        assert_eq!(
+            candidates,
+            vec![
+                TokenCandidate {
+                    token_number: 1,
+                    probability: 0.5,
+                },
+                TokenCandidate {
+                    token_number: 2,
+                    probability: 0.3,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    // Test a minimal case of 2 tokens of size 2, and 1 head
+    fn test_attention() {
+        let inp = vec![
+            1.0, 0.0, 1.0, 0.0, 10.0, 1.0, 0.0, 1.0, 0.0, 0.0, 20.0, 3.0,
+        ];
+        let mut out = vec![0.0; 4];
+
+        attention(&mut out, &inp, 2, 1);
+
+        assert_eq!(out, vec![10.0, 1.0, 15.0, 2.0]);
+    }
+}
